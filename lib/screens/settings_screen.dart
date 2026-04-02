@@ -236,38 +236,42 @@ class _TimerSection extends StatelessWidget {
 
   Future<void> _showCustomDialog(BuildContext context) async {
     final controller = TextEditingController();
-    final result = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('직접 입력'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '예: 45',
-            suffixText: '초',
+    try {
+      final result = await showDialog<int>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('직접 입력'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: '예: 45',
+              suffixText: '초',
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                final v = int.tryParse(controller.text);
+                if (v != null && v > 0) {
+                  Navigator.pop(ctx, v);
+                }
+              },
+              child: const Text('확인'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () {
-              final v = int.tryParse(controller.text);
-              if (v != null && v > 0) {
-                Navigator.pop(ctx, v);
-              }
-            },
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
-    if (result != null) {
-      onSelected(Duration(seconds: result));
+      );
+      if (result != null) {
+        onSelected(Duration(seconds: result));
+      }
+    } finally {
+      controller.dispose();
     }
   }
 
@@ -341,7 +345,9 @@ class _TimerSection extends StatelessWidget {
                 label:
                     _isCustomSelected ? _customLabel(selected) : '기타',
                 isSelected: _isCustomSelected,
-                onTap: enabled ? () => _showCustomDialog(context) : null,
+                onTap: enabled ? () {
+                  if (context.mounted) _showCustomDialog(context);
+                } : null,
               ),
             ],
           ),
