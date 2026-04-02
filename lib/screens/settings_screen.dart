@@ -4,9 +4,7 @@ import '../core/theme.dart';
 import '../logic/trigger_manager.dart';
 import 'caller_profile_screen.dart';
 
-// Stealth branding: nav bar shows lowercase "pingye" — not "핑계콜".
-// When the phone is face-up on a table, bystanders see a neutral, unremarkable title.
-const _kNavTitle = 'pingye';
+const _kNavTitle = '핑계콜';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
