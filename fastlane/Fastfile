@@ -1,0 +1,50 @@
+default_platform(:ios)
+
+platform :ios do
+
+  desc "앱을 App Store Connect에 등록 (최초 1회)"
+  lane :create_app do
+    produce(
+      app_name: "핑계콜",
+      language: "ko",
+      app_version: "1.0.0",
+      sku: "pingyecall001",
+      enable_services: {}
+    )
+  end
+
+  desc "인증서 + 프로파일 생성/갱신"
+  lane :setup_certs do
+    cert(
+      output_path: "./fastlane/certs"
+    )
+    sigh(
+      app_identifier: "com.keepdev.pingyecall",
+      output_path: "./fastlane/profiles",
+      filename: "AppStore_com.keepdev.pingyecall.mobileprovision"
+    )
+  end
+
+  desc "IPA 빌드 + TestFlight 업로드"
+  lane :beta do
+    setup_certs
+    sh("cd .. && flutter build ios --config-only --release")
+    build_app
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "IPA 빌드 + App Store 제출"
+  lane :release do
+    setup_certs
+    sh("cd .. && flutter build ios --config-only --release")
+    build_app
+    upload_to_app_store(
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false
+    )
+  end
+
+end

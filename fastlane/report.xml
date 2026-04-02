@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="fastlane.lanes">
+    
+    
+    
+      
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000203">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="1: Switch to ios setup_certs lane" time="0.000199">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="2: cert" time="2.941998">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="3: sigh" time="1.955733">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="4: cd .. &amp;&amp; flutter build ios --config-only --release" time="4.183492">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="5: build_app" time="70.787181">
+        
+      </testcase>
+    
+      
+      <testcase classname="fastlane.lanes" name="6: upload_to_testflight" time="327.935517">
+        
+      </testcase>
+    
+  </testsuite>
+</testsuites>

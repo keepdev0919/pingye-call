@@ -1,0 +1,7 @@
+scheme("Runner")
+workspace("ios/Runner.xcworkspace")
+output_directory("./build/ios/ipa")
+output_name("pingyecall")
+export_method("app-store")
+configuration("Release")
+clean(true)

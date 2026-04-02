@@ -1,0 +1,4 @@
+app_identifier("com.keepdev.pingyecall")
+apple_id("keepdev0919@gmail.com")
+team_id("HB2ZHR35Y4")
+itc_team_id("") # App Store Connect Team ID - 아래 produce 실행하면 자동으로 채워짐
