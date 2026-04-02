@@ -1,15 +1,11 @@
 class CallerProfile {
   final String name;
-  final String number;
 
-  const CallerProfile({required this.name, required this.number});
+  const CallerProfile({required this.name});
 
-  static const defaultProfile = CallerProfile(name: '엄마', number: '010-0000-0000');
+  static const defaultProfile = CallerProfile(name: '엄마');
 
-  CallerProfile copyWith({String? name, String? number}) {
-    return CallerProfile(
-      name: name ?? this.name,
-      number: number ?? this.number,
-    );
+  CallerProfile copyWith({String? name}) {
+    return CallerProfile(name: name ?? this.name);
   }
 }

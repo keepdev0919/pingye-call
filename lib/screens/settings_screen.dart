@@ -75,7 +75,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const _SectionHeader(label: '발신자'),
                   _NavCell(
                     label: state.callerProfile.name,
-                    subtitle: state.callerProfile.number,
                     enabled: !state.isWaiting,
                     onTap: () => Navigator.push(
                       context,
@@ -206,7 +205,7 @@ class _WaitingButton extends StatelessWidget {
   }
 }
 
-class _TimerSection extends StatelessWidget {
+class _TimerSection extends StatefulWidget {
   final Duration selected;
   final ValueChanged<Duration> onSelected;
   final bool enabled;
@@ -217,6 +216,13 @@ class _TimerSection extends StatelessWidget {
     required this.enabled,
   });
 
+  @override
+  State<_TimerSection> createState() => _TimerSectionState();
+}
+
+class _TimerSectionState extends State<_TimerSection> {
+  late final TextEditingController _controller;
+
   static const _options = [
     (label: '1분', duration: Duration(minutes: 1)),
     (label: '5분', duration: Duration(minutes: 5)),
@@ -224,8 +230,20 @@ class _TimerSection extends StatelessWidget {
     (label: '30분', duration: Duration(minutes: 30)),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   bool get _isCustomSelected =>
-      !_options.any((o) => o.duration == selected);
+      !_options.any((o) => o.duration == widget.selected);
 
   String _customLabel(Duration d) {
     final m = d.inMinutes;
@@ -234,51 +252,47 @@ class _TimerSection extends StatelessWidget {
     return s == 0 ? '$m분' : '$m분 $s초';
   }
 
-  Future<void> _showCustomDialog(BuildContext context) async {
-    final controller = TextEditingController();
-    try {
-      final result = await showDialog<int>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('직접 입력'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: '예: 45',
-              suffixText: '초',
-            ),
+  Future<void> _showCustomDialog() async {
+    _controller.clear();
+    final result = await showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('직접 입력'),
+        content: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: '예: 45',
+            suffixText: '초',
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                final v = int.tryParse(controller.text);
-                if (v != null && v > 0) {
-                  Navigator.pop(ctx, v);
-                }
-              },
-              child: const Text('확인'),
-            ),
-          ],
         ),
-      );
-      if (result != null) {
-        onSelected(Duration(seconds: result));
-      }
-    } finally {
-      controller.dispose();
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              final v = int.tryParse(_controller.text);
+              if (v != null && v > 0 && v <= 3600) {
+                Navigator.pop(ctx, v);
+              }
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && mounted) {
+      widget.onSelected(Duration(seconds: result));
     }
   }
 
-  Widget _buildChip(
-    BuildContext context, {
+  Widget _buildChip({
     required String label,
     required bool isSelected,
+    required bool enabled,
     VoidCallback? onTap,
   }) {
     return GestureDetector(
@@ -302,7 +316,7 @@ class _TimerSection extends StatelessWidget {
           style: TextStyle(
             color: isSelected
                 ? Colors.white
-                : (onTap != null
+                : (enabled
                     ? AppColors.textPrimary
                     : AppColors.textSecondary),
             fontSize: 15,
@@ -335,19 +349,20 @@ class _TimerSection extends StatelessWidget {
             runSpacing: 8,
             children: [
               ..._options.map((opt) => _buildChip(
-                    context,
                     label: opt.label,
-                    isSelected: selected == opt.duration,
-                    onTap: enabled ? () => onSelected(opt.duration) : null,
+                    isSelected: widget.selected == opt.duration,
+                    enabled: widget.enabled,
+                    onTap: widget.enabled
+                        ? () => widget.onSelected(opt.duration)
+                        : null,
                   )),
               _buildChip(
-                context,
-                label:
-                    _isCustomSelected ? _customLabel(selected) : '기타',
+                label: _isCustomSelected
+                    ? _customLabel(widget.selected)
+                    : '기타',
                 isSelected: _isCustomSelected,
-                onTap: enabled ? () {
-                  if (context.mounted) _showCustomDialog(context);
-                } : null,
+                enabled: widget.enabled,
+                onTap: widget.enabled ? _showCustomDialog : null,
               ),
             ],
           ),
@@ -359,13 +374,11 @@ class _TimerSection extends StatelessWidget {
 
 class _NavCell extends StatelessWidget {
   final String label;
-  final String? subtitle;
   final bool enabled;
   final VoidCallback onTap;
 
   const _NavCell({
     required this.label,
-    this.subtitle,
     required this.enabled,
     required this.onTap,
   });
@@ -383,28 +396,14 @@ class _NavCell extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: enabled
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontSize: 17,
-                    ),
-                  ),
-                  if (subtitle != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        subtitle!,
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 13),
-                      ),
-                    ),
-                ],
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: enabled
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                  fontSize: 17,
+                ),
               ),
             ),
             Icon(

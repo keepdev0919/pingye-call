@@ -70,7 +70,7 @@ class CallSimulator {
       if (Platform.isIOS) {
         await _iosChannel.invokeMethod('showCall', {
           'name': profile.name,
-          'number': profile.number,
+          'number': '',
         });
       } else {
         final callId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -79,7 +79,7 @@ class CallSimulator {
             id: callId,
             nameCaller: profile.name,
             appName: 'Phone',
-            handle: profile.number,
+            handle: profile.name,
             type: 0,
             duration: 30000,
             textAccept: '수락',
