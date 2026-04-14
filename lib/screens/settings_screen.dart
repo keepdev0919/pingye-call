@@ -4,7 +4,7 @@ import '../core/theme.dart';
 import '../logic/trigger_manager.dart';
 import 'caller_profile_screen.dart';
 
-const _kNavTitle = '핑계콜';
+const _kNavTitle = '알림';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -56,36 +56,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  const SizedBox(height: 20),
+              child: state.isWaiting
+                  ? _ArmedView(remaining: state.remaining)
+                  : ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        const SizedBox(height: 20),
 
-                  // Section 1: Trigger
-                  const _SectionHeader(label: '트리거'),
-                  _TimerSection(
-                    selected: _selectedDuration,
-                    onSelected: _selectDuration,
-                    enabled: !state.isWaiting,
-                  ),
+                        // Section 1: Caller (필수 입력 먼저)
+                        const _SectionHeader(label: '발신자'),
+                        _NavCell(
+                          label: state.callerProfile.name.isEmpty
+                              ? '이름 설정 필요'
+                              : state.callerProfile.name,
+                          enabled: true,
+                          isHint: state.callerProfile.name.isEmpty,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CallerProfileScreen()),
+                          ),
+                        ),
 
-                  const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                  // Section 2: Caller
-                  const _SectionHeader(label: '발신자'),
-                  _NavCell(
-                    label: state.callerProfile.name,
-                    enabled: !state.isWaiting,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const CallerProfileScreen()),
+                        // Section 2: Timer
+                        const _SectionHeader(label: '예약 시간'),
+                        _TimerSection(
+                          selected: _selectedDuration,
+                          onSelected: _selectDuration,
+                          enabled: true,
+                        ),
+
+                        const SizedBox(height: 32),
+                      ],
                     ),
-                  ),
-
-                  const SizedBox(height: 32),
-                ],
-              ),
             ),
 
             // CTA — pinned at bottom
@@ -98,6 +103,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// 대기 중 상태 — 중앙 카운트다운 hero
+class _ArmedView extends StatelessWidget {
+  final Duration? remaining;
+
+  const _ArmedView({required this.remaining});
+
+  String _formatHero(Duration? d) {
+    if (d == null) return '--:--';
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            _formatHero(remaining),
+            style: const TextStyle(
+              color: AppColors.accentArmed,
+              fontSize: 64,
+              fontWeight: FontWeight.w200,
+              fontFeatures: [FontFeature.tabularFigures()],
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '화면 어디든 탭하면 즉시 전화',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 15,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -167,14 +215,13 @@ class _WaitingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label =
-        remaining != null ? '⏱ ${formatDuration(remaining!)} 후 전화 예정' : '대기 중...';
+    final label = remaining != null ? '예약됨 — ${formatDuration(remaining!)} 후 전화' : '대기 중...';
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.accentArmed.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
@@ -184,7 +231,7 @@ class _WaitingButton extends StatelessWidget {
               child: Text(
                 label,
                 style: const TextStyle(
-                  color: AppColors.accent,
+                  color: AppColors.accentArmed,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   fontFeatures: [FontFeature.tabularFigures()],
@@ -340,10 +387,7 @@ class _TimerSectionState extends State<_TimerSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('예약 타이머',
-              style: TextStyle(
-                  color: AppColors.textPrimary, fontSize: 17)),
-          const SizedBox(height: 10),
+          const SizedBox(height: 4),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -359,7 +403,7 @@ class _TimerSectionState extends State<_TimerSection> {
               _buildChip(
                 label: _isCustomSelected
                     ? _customLabel(widget.selected)
-                    : '기타',
+                    : '직접 입력...',
                 isSelected: _isCustomSelected,
                 enabled: widget.enabled,
                 onTap: widget.enabled ? _showCustomDialog : null,
@@ -375,12 +419,14 @@ class _TimerSectionState extends State<_TimerSection> {
 class _NavCell extends StatelessWidget {
   final String label;
   final bool enabled;
+  final bool isHint;
   final VoidCallback onTap;
 
   const _NavCell({
     required this.label,
     required this.enabled,
     required this.onTap,
+    this.isHint = false,
   });
 
   @override
@@ -399,17 +445,16 @@ class _NavCell extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: enabled
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                  color: isHint
+                      ? AppColors.textSecondary
+                      : (enabled ? AppColors.textPrimary : AppColors.textSecondary),
                   fontSize: 17,
                 ),
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color:
-                  enabled ? AppColors.textSecondary : AppColors.dotEmpty,
+              color: enabled ? AppColors.textSecondary : AppColors.dotEmpty,
               size: 20,
             ),
           ],

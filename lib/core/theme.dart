@@ -8,7 +8,8 @@ class AppColors {
   static const textPrimary = Color(0xFFFFFFFF);
   static const textSecondary = Color(0xFF8E8E93);
   static const separator = Color(0xFF38383A);
-  static const accent = Color(0xFF5856D6); // iOS system indigo
+  static const accent = Color(0xFF5856D6); // iOS system indigo — idle 상태
+  static const accentArmed = Color(0xFF30D158); // iOS system green — 대기 중 상태
   static const error = Color(0xFFFF453A); // iOS system red
   static const dotEmpty = Color(0xFF3A3A3C);
   static const dotFilled = accent;
