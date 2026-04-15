@@ -17,7 +17,7 @@ import Flutter
     @objc static var shared: PingyeCallKitProvider?
 
     @objc init(channel: FlutterMethodChannel) {
-        let config = CXProviderConfiguration(localizedName: " ")
+        let config = CXProviderConfiguration(localizedName: "pingyecall")
         config.supportsVideo = false
         config.maximumCallGroups = 1
         config.maximumCallsPerCallGroup = 1
