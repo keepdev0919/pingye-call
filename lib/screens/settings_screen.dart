@@ -455,6 +455,11 @@ class _NavCell extends StatelessWidget {
                 ),
               ),
             ),
+            if (isHint)
+              const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.error_outline, color: AppColors.error, size: 16),
+              ),
             Icon(
               Icons.chevron_right,
               color: enabled ? AppColors.textSecondary : AppColors.dotEmpty,
