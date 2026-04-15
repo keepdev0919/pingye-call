@@ -56,9 +56,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: state.isWaiting
-                  ? _ArmedView(remaining: state.remaining)
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: state.isWaiting
+                  ? _ArmedView(key: const ValueKey('armed'), remaining: state.remaining)
                   : ListView(
+                      key: const ValueKey('idle'),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
                         const SizedBox(height: 20),
