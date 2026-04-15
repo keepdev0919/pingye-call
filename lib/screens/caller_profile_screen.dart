@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/caller_profile.dart';
 import '../logic/trigger_manager.dart';
 
@@ -38,12 +39,13 @@ class _CallerProfileScreenState extends ConsumerState<CallerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text('발신자'),
+        title: Text(l.callerNavTitle),
         titleTextStyle: const TextStyle(
           color: AppColors.textPrimary,
           fontSize: 17,
@@ -51,17 +53,17 @@ class _CallerProfileScreenState extends ConsumerState<CallerProfileScreen> {
         ),
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text(
-            '취소',
-            style: TextStyle(color: AppColors.accent, fontSize: 17),
+          child: Text(
+            l.cancel,
+            style: const TextStyle(color: AppColors.accent, fontSize: 17),
           ),
         ),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text(
-              '저장',
-              style: TextStyle(
+            child: Text(
+              l.save,
+              style: const TextStyle(
                 color: AppColors.accent,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -82,13 +84,13 @@ class _CallerProfileScreenState extends ConsumerState<CallerProfileScreen> {
               controller: _nameController,
               autofocus: true,
               style: const TextStyle(color: AppColors.textPrimary, fontSize: 17),
-              decoration: const InputDecoration(
-                labelText: '이름',
-                labelStyle: TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                hintText: '엄마',
-                hintStyle: TextStyle(color: AppColors.textSecondary),
+              decoration: InputDecoration(
+                labelText: l.callerNameLabel,
+                labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                hintText: l.callerNameHint,
+                hintStyle: const TextStyle(color: AppColors.textSecondary),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),

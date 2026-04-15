@@ -1,0 +1,63 @@
+{
+  "@@locale": "en",
+
+  "navTitleNotifications": "Reminders",
+  "sectionCaller": "Caller",
+  "nameNotSet": "Set caller name",
+  "sectionTimer": "Schedule",
+  "customTimerChip": "Custom...",
+  "customTimerDialogTitle": "Custom time",
+  "customTimerHint": "e.g. 45",
+  "customTimerSuffix": "sec",
+  "cancel": "Cancel",
+  "confirm": "OK",
+  "armedHint": "Tap anywhere to call instantly",
+  "waitingLabelNoTime": "Waiting...",
+  "waitingLabel": "Scheduled · calls in {time}",
+  "@waitingLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "startButton": "Start",
+  "noNameSnackbar": "Please set a caller name first",
+
+  "callerNavTitle": "Caller",
+  "save": "Save",
+  "callerNameLabel": "Name",
+  "callerNameHint": "Mom",
+
+  "gestureNavTitle": "Gesture",
+  "sectionTapCount": "Tap count",
+  "sectionExtraTrigger": "Extra triggers",
+  "volumeButtonLabel": "Volume button trigger",
+  "volumeButtonSubtitle": "Works on lock screen (experimental)",
+  "gestureTestComplete": "Done!",
+  "gestureTestHint": "Tap here to test",
+  "tapCountLabel": "Tap count",
+
+  "durationSeconds": "{s}s",
+  "@durationSeconds": {
+    "placeholders": {
+      "s": { "type": "int" }
+    }
+  },
+  "durationMinutes": "{m}m",
+  "@durationMinutes": {
+    "placeholders": {
+      "m": { "type": "int" }
+    }
+  },
+  "durationMinutesSeconds": "{m}m {s}s",
+  "@durationMinutesSeconds": {
+    "placeholders": {
+      "m": { "type": "int" },
+      "s": { "type": "int" }
+    }
+  },
+
+  "timer1Min": "1m",
+  "timer5Min": "5m",
+  "timer10Min": "10m",
+  "timer30Min": "30m"
+}

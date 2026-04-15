@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/trigger_manager.dart';
 import 'caller_profile_screen.dart';
-
-const _kNavTitle = '알림';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -22,10 +21,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _onStartWaiting() async {
+    final l = AppLocalizations.of(context)!;
     final profile = ref.read(triggerManagerProvider).callerProfile;
     if (profile.name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('발신자 이름을 먼저 설정해주세요')),
+        SnackBar(content: Text(l.noNameSnackbar)),
       );
       return;
     }
@@ -34,6 +34,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final state = ref.watch(triggerManagerProvider);
 
     return Scaffold(
@@ -41,9 +42,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text(
-          _kNavTitle,
-          style: TextStyle(
+        title: Text(
+          l.navTitleNotifications,
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 17,
             fontWeight: FontWeight.w400,
@@ -65,11 +66,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         const SizedBox(height: 20),
 
-                        // Section 1: Caller (필수 입력 먼저)
-                        const _SectionHeader(label: '발신자'),
+                        _SectionHeader(label: l.sectionCaller),
                         _NavCell(
                           label: state.callerProfile.name.isEmpty
-                              ? '이름 설정 필요'
+                              ? l.nameNotSet
                               : state.callerProfile.name,
                           enabled: true,
                           isHint: state.callerProfile.name.isEmpty,
@@ -82,8 +82,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                         const SizedBox(height: 20),
 
-                        // Section 2: Timer
-                        const _SectionHeader(label: '예약 시간'),
+                        _SectionHeader(label: l.sectionTimer),
                         _TimerSection(
                           selected: _selectedDuration,
                           onSelected: _selectDuration,
@@ -96,7 +95,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            // CTA — pinned at bottom
             _CTASection(
               state: state,
               onStart: _onStartWaiting,
@@ -111,7 +109,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-// 대기 중 상태 — 중앙 카운트다운 hero (pulse 애니메이션)
 class _ArmedView extends StatefulWidget {
   final Duration? remaining;
 
@@ -153,6 +150,7 @@ class _ArmedViewState extends State<_ArmedView>
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -171,9 +169,9 @@ class _ArmedViewState extends State<_ArmedView>
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            '화면 어디든 탭하면 즉시 전화',
-            style: TextStyle(
+          Text(
+            l.armedHint,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
             ),
@@ -195,15 +193,17 @@ class _CTASection extends StatelessWidget {
     required this.onCancel,
   });
 
-  String _formatDuration(Duration d) {
+  String _formatDuration(BuildContext context, Duration d) {
+    final l = AppLocalizations.of(context)!;
     final m = d.inMinutes;
     final s = d.inSeconds % 60;
-    if (m == 0) return '$s초';
-    return s == 0 ? '$m분' : '$m분 $s초';
+    if (m == 0) return l.durationSeconds(s);
+    return s == 0 ? l.durationMinutes(m) : l.durationMinutesSeconds(m, s);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: SizedBox(
@@ -213,7 +213,10 @@ class _CTASection extends StatelessWidget {
             ? _WaitingButton(
                 remaining: state.remaining,
                 onCancel: onCancel,
-                formatDuration: _formatDuration,
+                formatDuration: (d) => _formatDuration(context, d),
+                waitingLabel: l.waitingLabel,
+                waitingLabelNoTime: l.waitingLabelNoTime,
+                cancelLabel: l.cancel,
               )
             : ElevatedButton(
                 onPressed: onStart,
@@ -225,9 +228,9 @@ class _CTASection extends StatelessWidget {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  '대기 시작',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                child: Text(
+                  l.startButton,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                 ),
               ),
       ),
@@ -239,16 +242,24 @@ class _WaitingButton extends StatelessWidget {
   final Duration? remaining;
   final VoidCallback onCancel;
   final String Function(Duration) formatDuration;
+  final String Function(String) waitingLabel;
+  final String waitingLabelNoTime;
+  final String cancelLabel;
 
   const _WaitingButton({
     required this.remaining,
     required this.onCancel,
     required this.formatDuration,
+    required this.waitingLabel,
+    required this.waitingLabelNoTime,
+    required this.cancelLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    final label = remaining != null ? '예약됨 · ${formatDuration(remaining!)} 후 전화' : '대기 중...';
+    final label = remaining != null
+        ? waitingLabel(formatDuration(remaining!))
+        : waitingLabelNoTime;
 
     return Container(
       decoration: BoxDecoration(
@@ -274,9 +285,9 @@ class _WaitingButton extends StatelessWidget {
           ),
           TextButton(
             onPressed: onCancel,
-            child: const Text(
-              '취소',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+            child: Text(
+              cancelLabel,
+              style: const TextStyle(color: AppColors.textSecondary, fontSize: 15),
             ),
           ),
         ],
@@ -303,13 +314,6 @@ class _TimerSection extends StatefulWidget {
 class _TimerSectionState extends State<_TimerSection> {
   late final TextEditingController _controller;
 
-  static const _options = [
-    (label: '1분', duration: Duration(minutes: 1)),
-    (label: '5분', duration: Duration(minutes: 5)),
-    (label: '10분', duration: Duration(minutes: 10)),
-    (label: '30분', duration: Duration(minutes: 30)),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -322,35 +326,42 @@ class _TimerSectionState extends State<_TimerSection> {
     super.dispose();
   }
 
-  bool get _isCustomSelected =>
-      !_options.any((o) => o.duration == widget.selected);
+  List<({String label, Duration duration})> _options(AppLocalizations l) => [
+    (label: l.timer1Min, duration: const Duration(minutes: 1)),
+    (label: l.timer5Min, duration: const Duration(minutes: 5)),
+    (label: l.timer10Min, duration: const Duration(minutes: 10)),
+    (label: l.timer30Min, duration: const Duration(minutes: 30)),
+  ];
 
-  String _customLabel(Duration d) {
+  bool _isCustomSelected(AppLocalizations l) =>
+      !_options(l).any((o) => o.duration == widget.selected);
+
+  String _customLabel(AppLocalizations l, Duration d) {
     final m = d.inMinutes;
     final s = d.inSeconds % 60;
-    if (m == 0) return '$s초';
-    return s == 0 ? '$m분' : '$m분 $s초';
+    if (m == 0) return l.durationSeconds(s);
+    return s == 0 ? l.durationMinutes(m) : l.durationMinutesSeconds(m, s);
   }
 
-  Future<void> _showCustomDialog() async {
+  Future<void> _showCustomDialog(AppLocalizations l) async {
     _controller.clear();
     final result = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('직접 입력'),
+        title: Text(l.customTimerDialogTitle),
         content: TextField(
           controller: _controller,
           keyboardType: TextInputType.number,
           autofocus: true,
-          decoration: const InputDecoration(
-            hintText: '예: 45',
-            suffixText: '초',
+          decoration: InputDecoration(
+            hintText: l.customTimerHint,
+            suffixText: l.customTimerSuffix,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
+            child: Text(l.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -359,7 +370,7 @@ class _TimerSectionState extends State<_TimerSection> {
                 Navigator.pop(ctx, v);
               }
             },
-            child: const Text('확인'),
+            child: Text(l.confirm),
           ),
         ],
       ),
@@ -384,67 +395,55 @@ class _TimerSectionState extends State<_TimerSection> {
         splashColor: Colors.white.withValues(alpha: 0.12),
         highlightColor: Colors.white.withValues(alpha: 0.06),
         child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.accent
-                : AppColors.separator,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? AppColors.accent : AppColors.separator,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected
+                  ? Colors.white
+                  : (enabled ? AppColors.textPrimary : AppColors.textSecondary),
+              fontSize: 15,
+              fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+            ),
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : (enabled
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary),
-            fontSize: 15,
-            fontWeight:
-                isSelected ? FontWeight.w500 : FontWeight.w400,
-          ),
-        ),
-      ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final options = _options(l);
+    final isCustom = _isCustomSelected(l);
+
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              ..._options.map((opt) => _buildChip(
-                    label: opt.label,
-                    isSelected: widget.selected == opt.duration,
-                    enabled: widget.enabled,
-                    onTap: widget.enabled
-                        ? () => widget.onSelected(opt.duration)
-                        : null,
-                  )),
-              _buildChip(
-                label: _isCustomSelected
-                    ? _customLabel(widget.selected)
-                    : '직접 입력...',
-                isSelected: _isCustomSelected,
+          ...options.map((opt) => _buildChip(
+                label: opt.label,
+                isSelected: widget.selected == opt.duration,
                 enabled: widget.enabled,
-                onTap: widget.enabled ? _showCustomDialog : null,
-              ),
-            ],
+                onTap: widget.enabled ? () => widget.onSelected(opt.duration) : null,
+              )),
+          _buildChip(
+            label: isCustom ? _customLabel(l, widget.selected) : l.customTimerChip,
+            isSelected: isCustom,
+            enabled: widget.enabled,
+            onTap: widget.enabled ? () => _showCustomDialog(l) : null,
           ),
         ],
       ),
@@ -475,34 +474,34 @@ class _NavCell extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         splashColor: AppColors.accent.withValues(alpha: 0.08),
         highlightColor: AppColors.accent.withValues(alpha: 0.04),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isHint
-                      ? AppColors.textSecondary
-                      : (enabled ? AppColors.textPrimary : AppColors.textSecondary),
-                  fontSize: 17,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isHint
+                        ? AppColors.textSecondary
+                        : (enabled ? AppColors.textPrimary : AppColors.textSecondary),
+                    fontSize: 17,
+                  ),
                 ),
               ),
-            ),
-            if (isHint)
-              const Padding(
-                padding: EdgeInsets.only(right: 4),
-                child: Icon(Icons.error_outline, color: AppColors.error, size: 16),
+              if (isHint)
+                const Padding(
+                  padding: EdgeInsets.only(right: 4),
+                  child: Icon(Icons.error_outline, color: AppColors.error, size: 16),
+                ),
+              Icon(
+                Icons.chevron_right,
+                color: enabled ? AppColors.textSecondary : AppColors.dotEmpty,
+                size: 20,
               ),
-            Icon(
-              Icons.chevron_right,
-              color: enabled ? AppColors.textSecondary : AppColors.dotEmpty,
-              size: 20,
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

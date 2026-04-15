@@ -1,0 +1,63 @@
+{
+  "@@locale": "ko",
+
+  "navTitleNotifications": "알림",
+  "sectionCaller": "발신자",
+  "nameNotSet": "이름 설정 필요",
+  "sectionTimer": "예약 시간",
+  "customTimerChip": "직접 입력...",
+  "customTimerDialogTitle": "직접 입력",
+  "customTimerHint": "예: 45",
+  "customTimerSuffix": "초",
+  "cancel": "취소",
+  "confirm": "확인",
+  "armedHint": "화면 어디든 탭하면 즉시 전화",
+  "waitingLabelNoTime": "대기 중...",
+  "waitingLabel": "예약됨 · {time} 후 전화",
+  "@waitingLabel": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "startButton": "대기 시작",
+  "noNameSnackbar": "발신자 이름을 먼저 설정해주세요",
+
+  "callerNavTitle": "발신자",
+  "save": "저장",
+  "callerNameLabel": "이름",
+  "callerNameHint": "엄마",
+
+  "gestureNavTitle": "제스처 설정",
+  "sectionTapCount": "탭 횟수",
+  "sectionExtraTrigger": "추가 트리거",
+  "volumeButtonLabel": "볼륨버튼 트리거",
+  "volumeButtonSubtitle": "잠금화면에서도 작동 (실험적)",
+  "gestureTestComplete": "완료!",
+  "gestureTestHint": "여기를 탭해서 테스트",
+  "tapCountLabel": "탭 횟수",
+
+  "durationSeconds": "{s}초",
+  "@durationSeconds": {
+    "placeholders": {
+      "s": { "type": "int" }
+    }
+  },
+  "durationMinutes": "{m}분",
+  "@durationMinutes": {
+    "placeholders": {
+      "m": { "type": "int" }
+    }
+  },
+  "durationMinutesSeconds": "{m}분 {s}초",
+  "@durationMinutesSeconds": {
+    "placeholders": {
+      "m": { "type": "int" },
+      "s": { "type": "int" }
+    }
+  },
+
+  "timer1Min": "1분",
+  "timer5Min": "5분",
+  "timer10Min": "10분",
+  "timer30Min": "30분"
+}

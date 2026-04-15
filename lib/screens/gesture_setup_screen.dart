@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme.dart';
+import '../l10n/app_localizations.dart';
 import '../logic/tap_sequence_detector.dart';
 import '../logic/trigger_manager.dart';
 
@@ -63,6 +64,7 @@ class _GestureSetupScreenState extends ConsumerState<GestureSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final state = ref.watch(triggerManagerProvider);
 
     return Scaffold(
@@ -70,9 +72,9 @@ class _GestureSetupScreenState extends ConsumerState<GestureSetupScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
-        title: const Text(
-          '제스처 설정',
-          style: TextStyle(
+        title: Text(
+          l.gestureNavTitle,
+          style: const TextStyle(
               color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
@@ -88,22 +90,25 @@ class _GestureSetupScreenState extends ConsumerState<GestureSetupScreen> {
               liveCount: _liveCount,
               isFlash: _isFlash,
               onTap: _liveDetector.onTap,
+              completeLabel: l.gestureTestComplete,
+              hintLabel: l.gestureTestHint,
             ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  const _SectionHeader(label: '탭 횟수'),
+                  _SectionHeader(label: l.sectionTapCount),
                   _TapCountStepper(
                     value: state.tapTarget,
                     onChanged: _setTapTarget,
+                    tapCountLabel: l.tapCountLabel,
                   ),
                   const SizedBox(height: 20),
-                  const _SectionHeader(label: '추가 트리거'),
+                  _SectionHeader(label: l.sectionExtraTrigger),
                   _SettingsCell(
-                    label: '볼륨버튼 트리거',
-                    subtitle: '잠금화면에서도 작동 (실험적)',
+                    label: l.volumeButtonLabel,
+                    subtitle: l.volumeButtonSubtitle,
                     value: state.volumeButtonEnabled,
                     onChanged: (v) =>
                         ref.read(triggerManagerProvider.notifier).setVolumeButtonEnabled(v),
@@ -123,12 +128,16 @@ class _LiveTestArea extends StatelessWidget {
   final int liveCount;
   final bool isFlash;
   final VoidCallback onTap;
+  final String completeLabel;
+  final String hintLabel;
 
   const _LiveTestArea({
     required this.tapTarget,
     required this.liveCount,
     required this.isFlash,
     required this.onTap,
+    required this.completeLabel,
+    required this.hintLabel,
   });
 
   @override
@@ -162,7 +171,7 @@ class _LiveTestArea extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isFlash ? '완료!' : '여기를 탭해서 테스트',
+              isFlash ? completeLabel : hintLabel,
               style: TextStyle(
                 color: isFlash ? Colors.green : AppColors.textSecondary,
                 fontSize: 15,
@@ -178,8 +187,13 @@ class _LiveTestArea extends StatelessWidget {
 class _TapCountStepper extends StatelessWidget {
   final int value;
   final ValueChanged<int> onChanged;
+  final String tapCountLabel;
 
-  const _TapCountStepper({required this.value, required this.onChanged});
+  const _TapCountStepper({
+    required this.value,
+    required this.onChanged,
+    required this.tapCountLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -191,8 +205,8 @@ class _TapCountStepper extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text('탭 횟수',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 17)),
+          Text(tapCountLabel,
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 17)),
           const Spacer(),
           IconButton(
             onPressed: value > 2 ? () => onChanged(value - 1) : null,
