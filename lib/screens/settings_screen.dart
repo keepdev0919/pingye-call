@@ -47,7 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: AppColors.textSecondary,
             fontSize: 17,
             fontWeight: FontWeight.w400,
-            letterSpacing: 1.2,
           ),
         ),
         centerTitle: true,
@@ -112,11 +111,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-// 대기 중 상태 — 중앙 카운트다운 hero
-class _ArmedView extends StatelessWidget {
+// 대기 중 상태 — 중앙 카운트다운 hero (pulse 애니메이션)
+class _ArmedView extends StatefulWidget {
   final Duration? remaining;
 
   const _ArmedView({super.key, required this.remaining});
+
+  @override
+  State<_ArmedView> createState() => _ArmedViewState();
+}
+
+class _ArmedViewState extends State<_ArmedView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
 
   String _formatHero(Duration? d) {
     if (d == null) return '--:--';
@@ -131,14 +157,17 @@ class _ArmedView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            _formatHero(remaining),
-            style: const TextStyle(
-              color: AppColors.accentArmed,
-              fontSize: 64,
-              fontWeight: FontWeight.w200,
-              fontFeatures: [FontFeature.tabularFigures()],
-              letterSpacing: -1,
+          FadeTransition(
+            opacity: _opacity,
+            child: Text(
+              _formatHero(widget.remaining),
+              style: const TextStyle(
+                color: AppColors.accentArmed,
+                fontSize: 64,
+                fontWeight: FontWeight.w200,
+                fontFeatures: [FontFeature.tabularFigures()],
+                letterSpacing: -1,
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -219,7 +248,7 @@ class _WaitingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = remaining != null ? '예약됨 — ${formatDuration(remaining!)} 후 전화' : '대기 중...';
+    final label = remaining != null ? '예약됨 · ${formatDuration(remaining!)} 후 전화' : '대기 중...';
 
     return Container(
       decoration: BoxDecoration(
@@ -346,15 +375,18 @@ class _TimerSectionState extends State<_TimerSection> {
     required bool enabled,
     VoidCallback? onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    return Material(
+      color: isSelected ? AppColors.accent : AppColors.background,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: Colors.white.withValues(alpha: 0.12),
+        highlightColor: Colors.white.withValues(alpha: 0.06),
+        child: Container(
         padding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.accent
-              : AppColors.background,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
@@ -376,6 +408,7 @@ class _TimerSectionState extends State<_TimerSection> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -391,7 +424,6 @@ class _TimerSectionState extends State<_TimerSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 4),
           Wrap(
             spacing: 8,
             runSpacing: 8,

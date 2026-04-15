@@ -58,6 +58,19 @@ ThemeData buildAppTheme() {
             : AppColors.backgroundSecondary;
       }),
     ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: const Color(0xFF2C2C2E),
+      titleTextStyle: const TextStyle(
+        color: AppColors.textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+      ),
+      contentTextStyle: const TextStyle(
+        color: AppColors.textSecondary,
+        fontSize: 15,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    ),
     snackBarTheme: const SnackBarThemeData(
       backgroundColor: Color(0xFF3A3A3C),
       contentTextStyle: TextStyle(color: AppColors.textPrimary, fontSize: 15),
