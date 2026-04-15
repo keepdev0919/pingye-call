@@ -94,6 +94,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 32),
                       ],
                     ),
+              ),
             ),
 
             // CTA — pinned at bottom
@@ -115,7 +116,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 class _ArmedView extends StatelessWidget {
   final Duration? remaining;
 
-  const _ArmedView({required this.remaining});
+  const _ArmedView({super.key, required this.remaining});
 
   String _formatHero(Duration? d) {
     if (d == null) return '--:--';
@@ -434,14 +435,16 @@ class _NavCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
+    return Material(
+      color: AppColors.backgroundSecondary,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(10),
+        splashColor: AppColors.accent.withValues(alpha: 0.08),
+        highlightColor: AppColors.accent.withValues(alpha: 0.04),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.backgroundSecondary,
-          borderRadius: BorderRadius.circular(10),
-        ),
         child: Row(
           children: [
             Expanded(
@@ -467,6 +470,7 @@ class _NavCell extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
